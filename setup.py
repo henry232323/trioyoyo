@@ -35,7 +35,7 @@ setup(
     version='1.0.0',
     description='A trio oyoyo port',
     long_description=long_description,
-    url='https://github.com/henry232323/aioyoyo',
+    url='https://github.com/henry232323/trioyoyo',
     author='henry232323',
     author_email='henry@rhodochrosite.xyz',
     license='GPL',

@@ -46,10 +46,10 @@ class IRCClient:
     def __init__(self, cmd_handler, **kwargs):
         """ the first argument should be an object with attributes/methods named 
         as the irc commands. You may subclass from one of the classes in 
-        aioyoyo.cmdhandler for convenience but it is not required. The
+        trioyoyo.cmdhandler for convenience but it is not required. The
         methods should have arguments (prefix, args). prefix is 
         normally the sender of the command. args is a list of arguments.
-        Its recommened you subclass aioyoyo.cmdhandler.DefaultCommandHandler,
+        Its recommened you subclass trioyoyo.cmdhandler.DefaultCommandHandler,
         this class provides defaults for callbacks that are required for 
         normal IRC operation.
 

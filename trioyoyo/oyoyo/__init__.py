@@ -17,7 +17,7 @@
 """A small, simple irc lib for python suitable for bots, clients and anything else.
 
 For more information and documentation about this package:
-   http://code.google.com/p/aioyoyo/
+   http://code.google.com/p/oyoyo/
 """
 from . import client, cmdhandler, examplebot, helpers, ircevents, parse, services
 __all__ = ["client", "cmdhandler", "examplebot", "helpers", "ircevents", "parse", "services"]

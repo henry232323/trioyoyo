@@ -21,9 +21,9 @@
 """A small, simple irc lib for python suitable for bots, clients and anything else.
 
 For more information and documentation about the original package:
-   http://code.google.com/p/aioyoyo/
+   http://code.google.com/p/oyoyo/
 
-For documentation on aioyoyo: http://aioyoyo.rhodochrosite.xyz/
+For documentation on trioyoyo: http://trioyoyo.typheus.me/
 """
 from . import client, cmdhandler, helpers, oyoyo
 __all__ = ["client", "cmdhandler", "helpers", "oyoyo"]

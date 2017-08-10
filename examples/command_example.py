@@ -5,7 +5,7 @@ from trioyoyo.cmdhandler import CommandHandler, protected
 class CommandExampleClient(CommandClient):
     def __init__(self, *args, **kwargs):
         CommandClient.__init__(self, *args, **kwargs)
-        self.nick = "aioyoyo-example"
+        self.nick = "trioyoyo-example"
                 
     async def connection_made(self):  # Overwrite connection_made to make it send join commands
         print("Successfully connected!")
