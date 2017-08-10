@@ -105,7 +105,7 @@ _addsimple()
 
 def _addNumerics():
     import sys
-    from aioyoyo.oyoyo import ircevents
+    from . import ircevents
     def numericcmd(cmd_num, cmd_name):
         def f(cli, *args):
             cli.send(cmd_num, *args)

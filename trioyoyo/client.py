@@ -50,7 +50,7 @@ class IRCClient(object):
         self.socket = None
         self.bufsize = bufsize
 
-        self.logger = logging.getLogger("aioyoyo")
+        self.logger = logging.getLogger("trioyoyo")
         self.logger.setLevel(logging.INFO)
 
     def __repr__(self):
