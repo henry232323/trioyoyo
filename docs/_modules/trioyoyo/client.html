@@ -128,10 +128,8 @@
 <span class="sd">        forwarded by protocol.data_received, passes bytes not str&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;received: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="IRCClient.connection_lost"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.connection_lost">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connection_lost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Called when the connection is dropped, by default prints</span>
-<span class="sd">        the exception if there is one. Forwarded by protocol.connection_lost&quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;connection lost: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">exc</span><span class="p">)</span></div>
+<div class="viewcode-block" id="IRCClient.connection_lost"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.connection_lost">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connection_lost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the connection is dropped.&quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="IRCClient.send"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.send">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Send a message to the connected server. all arguments are joined</span>
