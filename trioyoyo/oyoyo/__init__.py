@@ -19,5 +19,5 @@
 For more information and documentation about this package:
    http://code.google.com/p/oyoyo/
 """
-from . import client, cmdhandler, examplebot, helpers, ircevents, parse, services
-__all__ = ["client", "cmdhandler", "examplebot", "helpers", "ircevents", "parse", "services"]
+from . import client, cmdhandler, helpers, ircevents, parse, services
+__all__ = ["client", "cmdhandler", "helpers", "ircevents", "parse", "services"]
