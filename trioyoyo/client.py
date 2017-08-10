@@ -83,10 +83,8 @@ class IRCClient(object):
         forwarded by protocol.data_received, passes bytes not str"""
         logging.info('received: %s' % data.decode())
 
-    async def connection_lost(self, exc=None):
-        """Called when the connection is dropped, by default prints
-        the exception if there is one. Forwarded by protocol.connection_lost"""
-        logging.info('connection lost: %s' % exc)
+    async def connection_lost(self):
+        """Called when the connection is dropped."""
 
     async def send(self, *args):
         """Send a message to the connected server. all arguments are joined
