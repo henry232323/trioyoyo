@@ -6,7 +6,35 @@
 A port of the Python IRC library oyoyo to trio for Python 3.5+
 A Python trio IRC library
 
+[See the documentation](http://typheus.me/trioyoyo)
+
 Uses Trio instead of its original threading client. Creating an IRCClient instance will create the protocol instance.
 To start the connection run `IRCClient.connect()` (coroutine)
 
 Uses oyoyo from [illuminatedWax](https://github.com/illuminatedwax)'s [Pesterchum](https://github.com/illuminatedwax/pesterchum/tree/master/oyoyo), slightly modified
+
+# Example
+Examples can be found [here](https://github.com/henry232323/trioyoyo/tree/master/examples)
+```py
+from trioyoyo.client import IRCClient
+
+
+class BasicExampleClient(IRCClient):
+    async def connection_made(self):  # Overwrite connection_made to make it send join commands
+        print("Successfully connected!")
+        self.nick = "trioyoyo-example"
+        await self.send("NICK", self.nick)
+        await self.send("USER", self.nick, self.address, self.address, self.nick)
+        await self.send("JOIN", "python")
+
+    async def data_received(self, data):  # Print all data received
+        print("Message Received: {}".format(data.decode()))
+
+    async def connection_lost(self):  # Print on connection lost
+        print("Connection has been lost!")
+
+
+client = BasicExampleClient(address="irc.freenode.net", port=6667)
+client.run()
+```
+
