@@ -28,15 +28,22 @@ To start the connection run IRCClient.connect(); (coroutine)
 
 import socket
 import logging
+from typing import Union
 
 import trio
 
 from .oyoyo.parse import parse_raw_irc_command
-from .oyoyo.cmdhandler import IRCClientError
+from .oyoyo.cmdhandler import IRCClientError, CommandHandler
 
 
 class IRCClient(object):
-    def __init__(self, address=None, port=None, bufsize=1024):
+    host = None
+    address = None
+    port = None
+    socket = None
+    bufsize = 1024
+
+    def __init__(self, address: str=None, port: int=None, bufsize: int=1024):
         """
         A basic Async IRC client. Use coroutine IRCClient.connect to initiate
         the connection. Takes the event loop, a host (address, port) and if
@@ -47,7 +54,6 @@ class IRCClient(object):
         self.host = (socket.gethostbyname(address), port)
         self.address = address
         self.port = port
-        self.socket = None
         self.bufsize = bufsize
 
         self.logger = logging.getLogger("trioyoyo")
@@ -56,8 +62,25 @@ class IRCClient(object):
     def __repr__(self):
         return "{0}(address={1}, port={2}, bufsize={3})".format(self.__class__.__name__, self.host[0], self.host[1], self.bufsize)
 
-    async def connect(self):
-        """Initiate the connection, creates a connection and assigns the created socket to `client.socket`"""
+    ############# Callbacks #############
+
+    async def connection_made(self):
+        """Called on a successful connection, by default forwarded by
+        protocol.connection_made"""
+        logging.info('connecting to %s:%s' % self.host)
+
+    async def data_received(self, data: bytes):
+        """Called when data is received by the connection, by default
+        forwarded by protocol.data_received, passes bytes not str"""
+        logging.info('received: %s' % data.decode())
+
+    async def connection_lost(self):
+        """Called when the connection is dropped."""
+
+    ############# Methods #############
+
+    async def connect(self) -> None:
+        """Initiate the connection, creates a connection and assigns the created socket to `client.socket`. Blocking"""
         buffer = bytes()
         with trio.socket.socket() as client_sock:
             self.socket = client_sock
@@ -75,20 +98,7 @@ class IRCClient(object):
                         nursery.spawn(self.data_received, el)
                 nursery.spawn(self.connection_lost)
 
-    async def connection_made(self):
-        """Called on a successful connection, by default forwarded by
-        protocol.connection_made"""
-        logging.info('connecting to %s:%s' % self.host)
-
-    async def data_received(self, data):
-        """Called when data is received by the connection, by default
-        forwarded by protocol.data_received, passes bytes not str"""
-        logging.info('received: %s' % data.decode())
-
-    async def connection_lost(self):
-        """Called when the connection is dropped."""
-
-    async def send(self, *args):
+    async def send(self, *args: Union[bytes, str]) -> None:
         """Send a message to the connected server. all arguments are joined
         with a space for convenience, for example the following are identical
 
@@ -114,35 +124,35 @@ class IRCClient(object):
         await self.send_raw(msg + b"\r\n")
         logging.info('---> send "%s"' % msg)
 
-    async def send_msg(self, message):
+    async def send_msg(self, message) -> None:
         """Send a str to the server from absolute raw, none of the formatting
         from IRCClient.send"""
         await self.socket.sendall(message.encode())
 
-    async def send_raw(self, data):
+    async def send_raw(self, data) -> None:
         """Send raw bytes to the server, none of the formatting from IRCClient.send"""
         await self.socket.sendall(data)
 
-    async def close(self):
+    async def close(self) -> None:
         """Close the connection"""
         logging.info('close transport')
         self.socket.close()
 
-    def run(self):
-        """Starts the client, blocking. For a non-blocking coroutine use client.connect()"""
+    def run(self) -> None:
+        """Starts the client, blocking. Use `client.connect` for a runnable coro"""
         trio.run(self.connect)
 
 
 class CommandClient(IRCClient):
     """IRCClient, using a command handler"""
-    def __init__(self, cmd_handler, **kwargs):
+    def __init__(self, cmd_handler: type, **kwargs):
         """Takes a command handler (see oyoyo.cmdhandler.CommandHandler)
         whose attributes are the commands you want callable, for example
         with a privmsg cmdhandler.privmsg will be awaited with the
         appropriate *args, decorate methods with @protected to make it
         uncallable as a command"""
         IRCClient.__init__(self, **kwargs)
-        self.command_handler = cmd_handler(self)
+        self.command_handler: CommandHandler = cmd_handler(self)
 
     async def data_received(self, data):
         """On IRCClient.data_received parse for a command and pass to the
