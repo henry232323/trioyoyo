@@ -60,8 +60,10 @@ class IRCClient(object):
         """Initiate the connection, creates a connection and assigns the created socket to `client.socket`"""
         buffer = bytes()
         with trio.socket.socket() as client_sock:
+            self.socket = client_sock
             await client_sock.connect(self.host)
             async with trio.open_nursery() as nursery:
+                nursery.spawn(self.connection_made)
                 while True:
                     data = await client_sock.recv(self.bufsize)
                     if not data:
@@ -139,7 +141,7 @@ class CommandClient(IRCClient):
         with a privmsg cmdhandler.privmsg will be awaited with the
         appropriate *args, decorate methods with @protected to make it
         uncallable as a command"""
-        super().__init__(self, **kwargs)
+        IRCClient.__init__(self, **kwargs)
         self.command_handler = cmd_handler(self)
 
     async def data_received(self, data):

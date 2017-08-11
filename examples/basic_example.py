@@ -9,11 +9,11 @@ class BasicExampleClient(IRCClient):
         await self.send("USER", self.nick, self.address, self.address, self.nick)
         await self.send("JOIN", "python")
 
-    async def data_received(self, data): # Print all data received
+    async def data_received(self, data):  # Print all data received
         print("Message Received: {}".format(data.decode()))
 
-    async def connection_lost(self, exc): # Print on connection lost
-        print("Connection has been lost! {}".format(exc))
+    async def connection_lost(self):  # Print on connection lost
+        print("Connection has been lost!")
 
 
 client = BasicExampleClient(address="irc.freenode.net", port=6667)
