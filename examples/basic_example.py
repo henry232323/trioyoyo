@@ -1,4 +1,4 @@
-from trioyoyo.client import IRCClient
+from trioyoyo import IRCClient
 
 
 class BasicExampleClient(IRCClient):
