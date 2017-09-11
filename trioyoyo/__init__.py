@@ -25,5 +25,11 @@ For more information and documentation about the original package:
 
 For documentation on trioyoyo: http://trioyoyo.typheus.me/
 """
-from . import client, cmdhandler, helpers, oyoyo
-__all__ = ["client", "cmdhandler", "helpers", "oyoyo"]
+from .client import IRCClient, CommandClient
+from .cmdhandler import protected CommandHandler
+from .helpers import HelperClient, DefaultCommandHandler, DefaultBotCommandHandler, BotCommandHandler
+
+from . import oyoyo
+from .oyoyo.parse import parse_nick, parse_raw_irc_command
+from .oyoyo.ircevents import all_events, generated_events, protocol_events, numeric_events
+from .oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError, IRCClientError
