@@ -16,7 +16,7 @@ Uses oyoyo from [illuminatedWax](https://github.com/illuminatedwax)'s [Pesterchu
 # Example
 Examples can be found [here](https://github.com/henry232323/trioyoyo/tree/master/examples)
 ```python
-from trioyoyo.client import IRCClient
+from trioyoyo import IRCClient
 
 
 class BasicExampleClient(IRCClient):
