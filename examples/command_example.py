@@ -1,5 +1,4 @@
-from trioyoyo.client import CommandClient
-from trioyoyo.cmdhandler import CommandHandler, protected
+from trioyoyo import CommandHandler, protected, CommandClient
 
 
 class CommandExampleClient(CommandClient):
