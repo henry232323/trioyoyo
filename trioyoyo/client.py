@@ -50,8 +50,8 @@ class IRCClient(object):
         ClientProtocol class, which just uses the IRCClient's tracebacks and
         passes received data to the client.
         """
-        self.host = (host, port)
-        self.address = address
+        self.host = host
+        self.address = None
         self.port = port
         self.bufsize = bufsize
 
@@ -83,8 +83,8 @@ class IRCClient(object):
         buffer = bytes()
         with trio.socket.socket() as client_sock:
             self.socket = client_sock
-            host = await trio.socket.getaddrinfo(*self.host)
-            await client_sock.connect(*host[0][4])
+            self.address = await self.socket.resolve_remote_address(self.host)
+            await client_sock.connect(self.address, self.port)
             async with trio.open_nursery() as nursery:
                 nursery.spawn(self.connection_made)
                 while True:
