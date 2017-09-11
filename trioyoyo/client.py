@@ -26,7 +26,6 @@ instance.
 To start the connection run IRCClient.connect(); (coroutine)
 """
 
-import socket
 import logging
 from typing import Union
 
@@ -43,7 +42,7 @@ class IRCClient(object):
     socket = None
     bufsize = 1024
 
-    def __init__(self, address: str=None, port: int=None, bufsize: int=1024):
+    def __init__(self, host: str=None, port: int=None, bufsize: int=1024):
         """
         A basic Async IRC client. Use coroutine IRCClient.connect to initiate
         the connection. Takes the event loop, a host (address, port) and if
@@ -51,7 +50,7 @@ class IRCClient(object):
         ClientProtocol class, which just uses the IRCClient's tracebacks and
         passes received data to the client.
         """
-        self.host = (socket.gethostbyname(address), port)
+        self.host = (host, port)
         self.address = address
         self.port = port
         self.bufsize = bufsize
@@ -84,7 +83,8 @@ class IRCClient(object):
         buffer = bytes()
         with trio.socket.socket() as client_sock:
             self.socket = client_sock
-            await client_sock.connect(self.host)
+            host = await trio.socket.getaddrinfo(*self.host)
+            await client_sock.connect(*host[0][4])
             async with trio.open_nursery() as nursery:
                 nursery.spawn(self.connection_made)
                 while True:
