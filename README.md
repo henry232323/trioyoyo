@@ -24,7 +24,7 @@ class BasicExampleClient(IRCClient):
         print("Successfully connected!")
         self.nick = "trioyoyo-example"
         await self.send("NICK", self.nick)
-        await self.send("USER", self.nick, self.address, self.address, self.nick)
+        await self.send("USER", self.nick, self.host, self.host, self.nick)
         await self.send("JOIN", "python")
 
     async def data_received(self, data):  # Print all data received
