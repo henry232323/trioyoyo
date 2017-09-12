@@ -41,16 +41,20 @@ class CommandError(Exception):
     def __init__(self, cmd):
         self.cmd = cmd
 
+
 class NoSuchCommandError(CommandError):
     def __str__(self):
         return 'No such command "%s"' % ".".join(self.cmd)
+
 
 class ProtectedCommandError(CommandError):
     def __str__(self):
         return 'Command "%s" is protected' % ".".join(self.cmd)
 
+
 class IRCClientError(Exception):
     pass
+
 
 class CommandHandler(object):
     """ The most basic CommandHandler """
@@ -68,9 +72,9 @@ class CommandHandler(object):
         its possible to pass both "command.sub.func" and 
         ["command", "sub", "func"].
         """
-        if isinstance(in_command_parts, (bytes)):
-            in_command_parts = in_command_parts.split(".".encode())
-        elif isinstance(in_command_parts, (str)):
+        if isinstance(in_command_parts, bytes):
+            in_command_parts = in_command_parts.split(b".")
+        elif isinstance(in_command_parts, str):
             in_command_parts = in_command_parts.split('.')
         command_parts = in_command_parts[:]
 
@@ -105,13 +109,12 @@ class CommandHandler(object):
         try:
             f = self.get(command)
         except NoSuchCommandError:
-            self.__unhandled__(command, *args)
-            return
+            return self.__unhandled__(command, *args)
 
         logging.debug('f %s' % f)
 
         try:
-            f(self.client, *args)
+            return f(self.client, *args)
         except Exception as e:
             logging.error('command raised %s' % e)
             logging.error(traceback.format_exc())
@@ -140,8 +143,7 @@ class DefaultBotCommandHandler(CommandHandler):
 
     @protected
     def getVisibleCommands(self, obj=None):
-        test = (lambda x: isinstance(x, CommandHandler) or \
-                inspect.ismethod(x) or inspect.isfunction(x))
+        test = (lambda x: isinstance(x, CommandHandler) or inspect.ismethod(x) or inspect.isfunction(x))
         members = inspect.getmembers(obj or self, test)          
         return [m for m, _ in members 
             if (not m.startswith('_') and 

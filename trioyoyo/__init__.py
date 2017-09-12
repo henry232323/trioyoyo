@@ -25,9 +25,9 @@ For more information and documentation about the original package:
 
 For documentation on trioyoyo: http://trioyoyo.typheus.me/
 """
+from .helpers import HelperClient
 from .client import IRCClient, CommandClient
-from .cmdhandler import protected CommandHandler
-from .helpers import HelperClient, DefaultCommandHandler, DefaultBotCommandHandler, BotCommandHandler
+from .cmdhandler import protected, CommandHandler, DefaultCommandHandler, DefaultBotCommandHandler, BotCommandHandler
 
 from . import oyoyo
 from .oyoyo.parse import parse_nick, parse_raw_irc_command

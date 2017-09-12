@@ -24,7 +24,7 @@ import logging
 import traceback
 
 from .oyoyo.parse import parse_nick
-from .oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError, IRCClientError
+from .oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError
 
 from .helpers import HelperClient
 
@@ -80,7 +80,7 @@ class CommandHandler(object):
         return f
 
     @protected
-    async def run(self, command, *args):
+    def run(self, command, *args):
         """Finds and runs a command"""
         logging.debug("processCommand %s(%s)" % (command, args))
         logging.info("processCommand %s(%s)" % (command, args))
@@ -88,20 +88,19 @@ class CommandHandler(object):
         try:
             f = self.get(command)
         except NoSuchCommandError:
-            self.__unhandled__(command, *args)
-            return
+            return self.__unhandled__(command, *args)
 
         logging.debug('f %s' % f)
 
         try:
-            await f(self.client, *args)
+            return f(self.client, *args)
         except Exception as e:
             logging.error('command raised %s' % e)
             logging.error(traceback.format_exc())
             raise CommandError(command)
 
     @protected
-    def __unhandled__(self, cmd, *args):
+    async def __unhandled__(self, cmd, *args):
         """The default handler for commands. Override this method to
         apply custom behavior (example, printing) unhandled commands.
         """
