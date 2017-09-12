@@ -16,7 +16,7 @@ class CommandTestClient(CommandClient):
 
 class TestCommandHandler(CommandHandler):
     first = False
-    welc = False
+    sasl = False
 
     async def notice(self, client, *args):  # Will be called on the NOTICE command
         if not self.first:
@@ -25,12 +25,11 @@ class TestCommandHandler(CommandHandler):
             await client.send("JOIN", "python")
             self.first = True
 
-        print("Notice received: {}".format(b" ".join(args).decode()))
+        if args[-1] == b"*** You need to identify via SASL to use this server":
+            self.sasl = True
+            self.client.close()
 
-    async def welcome(self, client, *args):  # Called if we successfully login
-        print(b" ".join(args).decode())
-        self.welc = True
-        self.client.close()
+        print("Notice received: {}".format(b" ".join(args).decode()))
 
 
 class CommandTest(unittest.TestCase):
@@ -39,7 +38,7 @@ class CommandTest(unittest.TestCase):
         client.run()
 
         self.assertTrue(client.command_handler.first)
-        self.assertTrue(client.command_handler.welc)
+        self.assertTrue(client.command_handler.sasl)
 
 
 if __name__ == "__main__":
