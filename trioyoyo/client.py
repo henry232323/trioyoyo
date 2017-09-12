@@ -127,12 +127,12 @@ class IRCClient(object):
         await self.send_raw(msg + b"\r\n")
         logging.info('---> send "%s"' % msg)
 
-    async def send_msg(self, message) -> None:
+    async def send_msg(self, message: str) -> None:
         """Send a str to the server from absolute raw, none of the formatting
         from IRCClient.send"""
         await self.socket.sendall(message.encode())
 
-    async def send_raw(self, data) -> None:
+    async def send_raw(self, data: bytes) -> None:
         """Send raw bytes to the server, none of the formatting from IRCClient.send"""
         await self.socket.sendall(data)
 
@@ -142,7 +142,7 @@ class IRCClient(object):
         self.socket.close()
 
     def run(self) -> None:
-        """Starts the client, blocking. Use `client.connect` for a runnable coro"""
+        """Starts the client, blocking. Use `client.connect` for a runnable coro. Essentially `trio.run(self.connect)`"""
         trio.run(self.connect)
 
 
