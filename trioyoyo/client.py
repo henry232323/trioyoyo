@@ -27,7 +27,7 @@ To start the connection run IRCClient.connect(); (coroutine)
 """
 
 import logging
-from typing import Union
+from typing import Union, Callable
 
 import trio
 
@@ -148,7 +148,7 @@ class IRCClient(object):
 
 class CommandClient(IRCClient):
     """IRCClient, using a command handler"""
-    def __init__(self, cmd_handler: typing.Callable[[IRCClient], CommandHandler], *args, **kwargs):
+    def __init__(self, cmd_handler: Callable[[IRCClient], CommandHandler], *args, **kwargs):
         """Takes a command handler (see oyoyo.cmdhandler.CommandHandler)
         whose attributes are the commands you want callable, for example
         with a privmsg cmdhandler.privmsg will be awaited with the
