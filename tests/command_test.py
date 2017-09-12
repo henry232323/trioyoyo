@@ -35,7 +35,7 @@ class TestCommandHandler(CommandHandler):
 
 class CommandTest(unittest.TestCase):
     def test_command(self):
-        client = CommandTestClient(TestCommandHandler, host="irc.mindfang.org", port=6667)
+        client = CommandTestClient(TestCommandHandler, host="irc.freenode.org", port=6667)
         client.run()
 
         self.assertTrue(client.command_handler.first)
