@@ -51,7 +51,6 @@ class IRCClient(object):
         passes received data to the client.
         """
         self.host = host
-        self.address = None
         self.port = port
         self.bufsize = bufsize
 
@@ -66,7 +65,7 @@ class IRCClient(object):
     async def connection_made(self):
         """Called on a successful connection, by default forwarded by
         protocol.connection_made"""
-        logging.info('connecting to %s:%s' % self.host)
+        logging.info('connecting to %s:%s' % self.address)
 
     async def data_received(self, data: bytes):
         """Called when data is received by the connection, by default
@@ -75,6 +74,7 @@ class IRCClient(object):
 
     async def connection_lost(self):
         """Called when the connection is dropped."""
+        logging.info('connection dropped')
 
     ############# Methods #############
 
@@ -83,19 +83,22 @@ class IRCClient(object):
         buffer = bytes()
         with trio.socket.socket() as client_sock:
             self.socket = client_sock
-            self.address = await self.socket.resolve_remote_address(self.host)
-            await client_sock.connect(self.address, self.port)
+            self.address = await self.socket.resolve_remote_address((self.host, self.port))
+            await client_sock.connect(self.address)
             async with trio.open_nursery() as nursery:
                 nursery.spawn(self.connection_made)
                 while True:
-                    data = await client_sock.recv(self.bufsize)
-                    if not data:
+                    if not self.socket._sock._closed:
+                        data = await client_sock.recv(self.bufsize)
+                        if not data:
+                            break
+                        buffer += data
+                        pts = buffer.split(b"\n")
+                        buffer = pts.pop()
+                        for el in pts:
+                            nursery.spawn(self.data_received, el)
+                    else:
                         break
-                    buffer += data
-                    pts = buffer.split(b"\n")
-                    buffer = pts.pop()
-                    for el in pts:
-                        nursery.spawn(self.data_received, el)
                 nursery.spawn(self.connection_lost)
 
     async def send(self, *args: Union[bytes, str]) -> None:
@@ -133,7 +136,7 @@ class IRCClient(object):
         """Send raw bytes to the server, none of the formatting from IRCClient.send"""
         await self.socket.sendall(data)
 
-    async def close(self) -> None:
+    def close(self) -> None:
         """Close the connection"""
         logging.info('close transport')
         self.socket.close()
@@ -145,13 +148,13 @@ class IRCClient(object):
 
 class CommandClient(IRCClient):
     """IRCClient, using a command handler"""
-    def __init__(self, cmd_handler: type, **kwargs):
+    def __init__(self, cmd_handler: type, *args, **kwargs):
         """Takes a command handler (see oyoyo.cmdhandler.CommandHandler)
         whose attributes are the commands you want callable, for example
         with a privmsg cmdhandler.privmsg will be awaited with the
         appropriate *args, decorate methods with @protected to make it
         uncallable as a command"""
-        IRCClient.__init__(self, **kwargs)
+        IRCClient.__init__(self, *args, **kwargs)
         self.command_handler: CommandHandler = cmd_handler(self)
 
     async def data_received(self, data):

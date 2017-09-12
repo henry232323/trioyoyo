@@ -2,19 +2,18 @@ from trioyoyo import CommandHandler, protected, CommandClient
 
 
 class CommandExampleClient(CommandClient):
-    def __init__(self, *args, **kwargs):
-        CommandClient.__init__(self, *args, **kwargs)
-        self.nick = "trioyoyo-example"
-                
-    async def connection_made(self):  # Overwrite connection_made to make it send join commands
-        print("Successfully connected!")
-        await self.send("NICK", self.nick)
-        await self.send("USER", self.nick, self.address, self.address, self.nick)
-        await self.send("JOIN", "python")
+    nick = "trioyoyo-example"
 
 
 class ExampleCommandHandler(CommandHandler):
+    first = False
     async def notice(self, client, *args):  # Will be called on the NOTICE command
+        if not self.first:
+            await client.send("NICK", client.nick)
+            await client.send("USER", client.nick, client.host, client.host, client.nick)
+            await client.send("JOIN", "python")
+            self.first = True
+            
         print("Notice received: {}".format(b" ".join(args).decode()))
 
     async def endofmotd(self, client, *args):  # Called on numeric command 376 endofmotd
@@ -26,8 +25,9 @@ class ExampleCommandHandler(CommandHandler):
         print(self.client.nick)
 
 
-client = CommandExampleClient(CommandHandler, address="irc.freenode.net", port=6667)
-client.run()
+if __name__ == "__main__":
+    client = CommandExampleClient(ExampleCommandHandler, host="irc.freenode.net", port=6667)
+    client.run()
 
 # We can run the connect coroutine directly instead of using the blocking run
 # await client.connect()

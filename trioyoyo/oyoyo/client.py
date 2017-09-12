@@ -49,7 +49,7 @@ class IRCClient:
         trioyoyo.cmdhandler for convenience but it is not required. The
         methods should have arguments (prefix, args). prefix is 
         normally the sender of the command. args is a list of arguments.
-        Its recommened you subclass trioyoyo.cmdhandler.DefaultCommandHandler,
+        Its recommened you subclass trioyoyo.DefaultCommandHandler,
         this class provides defaults for callbacks that are required for 
         normal IRC operation.
 

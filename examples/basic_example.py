@@ -15,6 +15,6 @@ class BasicExampleClient(IRCClient):
     async def connection_lost(self):  # Print on connection lost
         print("Connection has been lost!")
 
-
-client = BasicExampleClient(address="irc.freenode.net", port=6667)
-client.run()
+if __name__ == "__main__":
+    client = BasicExampleClient(host="irc.freenode.net", port=6667)
+    client.run()

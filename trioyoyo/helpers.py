@@ -22,6 +22,7 @@
 import random
 from .client import IRCClient
 
+
 class HelperClient(IRCClient):
     """Contains helper functions for common IRC commands, you may either inherit
     from HelperClient (which inherits IRCClient,) or you may just call the methods
@@ -34,7 +35,7 @@ class HelperClient(IRCClient):
     async def msg(cli, user, msg):
         """Send message `msg` to `user` with PRIVMSG command"""
         for line in msg.split('\n'):
-            cli.send("PRIVMSG", user, ":%s" % line)
+            await cli.send("PRIVMSG", user, ":%s" % line)
 
     async def names(cli, *channels):
         """Send NAMES command, see source"""
@@ -44,60 +45,60 @@ class HelperClient(IRCClient):
             msglist.append(tmp.pop())
             if len(",".join(msglist)) > 490:
                 tmp.append(msglist.pop())
-                cli.send("NAMES %s" % (",".join(msglist)))
+                await cli.send("NAMES %s" % (",".join(msglist)))
                 msglist = []
         if len(msglist) > 0:
-            cli.send("NAMES %s" % (",".join(msglist)))
+            await cli.send("NAMES %s" % (",".join(msglist)))
 
     async def channel_list(cli):
         """Send the LIST command"""
-        cli.send("LIST")
+        await cli.send("LIST")
 
     async def kick(cli, handle, channel, reason=""):
         """KICK `handle` from `channel` with optional `reason`"""
-        cli.send("KICK %s %s %s" % (channel, handle, reason))
+        await cli.send("KICK %s %s %s" % (channel, handle, reason))
 
     async def mode(cli, channel, mode, options=None):
         """Send the MODE command to the given `channel` with optional `options`"""
         cmd = "MODE %s %s" % (channel, mode)
         if options:
             cmd += " %s" % (options)
-        cli.send(cmd)
+            await cli.send(cmd)
 
     async def ctcp(cli, handle, cmd, msg=""):
         """Send CTCP command using PRIVMSG where `handle` is the user, `cmd` is the command and the optional `msg`"""
-        cli.send("PRIVMSG", handle, "\x01%s %s\x01" % (cmd, msg))
+        await cli.send("PRIVMSG", handle, "\x01%s %s\x01" % (cmd, msg))
 
     async def ctcp_reply(cli, handle, cmd, msg=""):
         """Forewards ctcp_reply command to notice function with added CTCP formatting"""
-        cli.notice(cli, str(handle), "\x01%s %s\x01" % (cmd.upper(), msg))
+        await cli.notice(str(handle), "\x01%s %s\x01" % (cmd.upper(), msg))
 
     async def msgrandom(cli, choices, dest, user=None):
         """Function for random responses"""
         o = "%s: " % user if user else ""
         o += random.choice(choices)
-        cli.msg(cli, dest, o)
+        await cli.msg(dest, o)
 
     async def ns(cli, *args):
         """Messages NickServ with space joined *args"""
-        cli.msg(cli, "NickServ", " ".join(args))
+        await cli.msg("NickServ", " ".join(args))
 
     async def cs(cli, *args):
         """Messages ChanServ with space joined *args"""
-        cli.msg(cli, "ChanServ", " ".join(args))
+        await cli.msg("ChanServ", " ".join(args))
 
     async def identify(cli, passwd, authuser="NickServ"):
         """Send IDENTIFY command with `passwd`, default `authuser` is NickServ"""
-        cli.msg(cli, authuser, "IDENTIFY %s" % passwd)
+        await cli.msg(authuser, "IDENTIFY %s" % passwd)
 
     async def quit(cli, msg='gone'):
         """Send quit command with optional message, defaults to  'gone'"""
-        cli.send("QUIT :%s" % msg)
+        await cli.send("QUIT :%s" % msg)
         cli._end = 1
 
     async def user(cli, username, realname=None):
         """Sends USER command with given `username`, uses realname instead if given"""
-        cli.send("USER", realname or username, cli.host, cli.host,
+        await cli.send("USER", realname or username, cli.host, cli.host,
                  realname or username)
 
 
