@@ -27,6 +27,7 @@ from ._oyoyo.parse import parse_nick
 from ._oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError
 
 from .helpers import HelperClient
+from .client import IRCClient
 
 
 def protected(func):
@@ -38,7 +39,7 @@ def protected(func):
 class CommandHandler(object):
     """ The most basic CommandHandler """
 
-    def __init__(self, client):
+    def __init__(self, client: IRCClient):
         self.client = client
 
     @protected
@@ -136,13 +137,13 @@ class DefaultBotCommandHandler(CommandHandler):
         if not arg:
             commands = self.getVisibleCommands()
             commands.sort()
-            await helpers.msg(self.client, dest,
+            await HelperClient.msg(self.client, dest,
                         "available commands: %s" % " ".join(commands))
         else:
             try:
                 f = self.get(arg)
             except CommandError as e:
-                await helpers.msg(self.client, dest, str(e))
+                await HelperClient.msg(self.client, dest, str(e))
                 return
 
             doc = f.__doc__.strip() if f.__doc__ else "No help available"
@@ -152,15 +153,14 @@ class DefaultBotCommandHandler(CommandHandler):
                 if subcommands:
                     doc += " [sub commands: %s]" % " ".join(subcommands)
 
-            await helpers.msg(self.client, dest, "%s: %s" % (arg, doc))
+            await HelperClient.msg(self.client, dest, "%s: %s" % (arg, doc))
 
 
 class BotCommandHandler(DefaultCommandHandler):
     """Complete command handler for bots"""
 
-    def __init__(self, client, command_handler):
+    def __init__(self, client: IRCClient):
         DefaultCommandHandler.__init__(self, client)
-        self.command_handler = command_handler
 
     async def privmsg(self, prefix, dest, msg):
         """Called when privmsg command is received, just awaits
@@ -189,7 +189,7 @@ class BotCommandHandler(DefaultCommandHandler):
         arg = parts[1:]
 
         try:
-            await self.command_handler.run(command, prefix, dest, *arg)
+            await self.run(command, prefix, dest, *arg)
         except CommandError as e:
             await HelperClient.msg(self.client, dest, str(e))
         return True
