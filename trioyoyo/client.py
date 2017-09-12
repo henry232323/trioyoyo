@@ -31,8 +31,8 @@ from typing import Union
 
 import trio
 
-from .oyoyo.parse import parse_raw_irc_command
-from .oyoyo.cmdhandler import IRCClientError, CommandHandler
+from ._oyoyo.parse import parse_raw_irc_command
+from ._oyoyo.cmdhandler import IRCClientError, CommandHandler
 
 
 class IRCClient(object):

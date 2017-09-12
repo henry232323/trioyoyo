@@ -29,7 +29,7 @@ from .helpers import HelperClient
 from .client import IRCClient, CommandClient
 from .cmdhandler import protected, CommandHandler, DefaultCommandHandler, DefaultBotCommandHandler, BotCommandHandler
 
-from . import oyoyo
-from .oyoyo.parse import parse_nick, parse_raw_irc_command
-from .oyoyo.ircevents import all_events, generated_events, protocol_events, numeric_events
-from .oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError, IRCClientError
+from . import _oyoyo
+from ._oyoyo.parse import parse_nick, parse_raw_irc_command
+from ._oyoyo.ircevents import all_events, generated_events, protocol_events, numeric_events
+from ._oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError, IRCClientError

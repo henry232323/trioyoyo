@@ -23,8 +23,8 @@ import inspect
 import logging
 import traceback
 
-from .oyoyo.parse import parse_nick
-from .oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError
+from ._oyoyo.parse import parse_nick
+from ._oyoyo.cmdhandler import CommandError, NoSuchCommandError, ProtectedCommandError
 
 from .helpers import HelperClient
 
