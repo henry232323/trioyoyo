@@ -177,7 +177,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Type</span>
 
 <span class="kn">import</span> <span class="nn">trio</span>
 
@@ -298,7 +298,7 @@
 
 <div class="viewcode-block" id="CommandClient"><a class="viewcode-back" href="../../index.html#trioyoyo.CommandClient">[docs]</a><span class="k">class</span> <span class="nc">CommandClient</span><span class="p">(</span><span class="n">IRCClient</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;IRCClient, using a command handler&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd_handler</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">IRCClient</span><span class="p">],</span> <span class="n">CommandHandler</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Takes a command handler (see oyoyo.cmdhandler.CommandHandler)</span>
 <span class="sd">        whose attributes are the commands you want callable, for example</span>
 <span class="sd">        with a privmsg cmdhandler.privmsg will be awaited with the</span>
