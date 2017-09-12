@@ -25,8 +25,7 @@ class TestCommandHandler(CommandHandler):
             await client.send("JOIN", "python")
             self.first = True
 
-        print(args)
-        if args[-1] == b"*** You need to identify via SASL to use this server":
+        if args[-1] == b'*** Notice -- You need to identify via SASL to use this server':
             self.sasl = True
             self.client.close()
 
