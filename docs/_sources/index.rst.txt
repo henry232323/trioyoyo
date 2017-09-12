@@ -13,41 +13,61 @@ Documentation for Trioyoyo
 Base Clients
 ------------
 
-.. autoclass:: trioyoyo.client.IRCClient
+.. autoclass:: trioyoyo.IRCClient
    :members:
    
-.. autoclass:: trioyoyo.client.CommandClient
+.. autoclass:: trioyoyo.CommandClient
    :members:
    
 Command Handlers
 ----------------
-
-.. automodule:: trioyoyo.cmdhandler
+   
+.. autoclass:: trioyoyo.CommandHandler
+   :members:
+   
+.. autoclass:: trioyoyo.DefaultCommandHandler
+   :members:
+   
+.. autoclass:: trioyoyo.BotCommandHandler
+   :members:
+   
+.. autoclass:: trioyoyo.DefaultBotCommandHandler
    :members:
    
 Additional Helper Functions
 ---------------------------
 
-.. autoclass:: trioyoyo.helpers.HelperClient
+.. autoclass:: trioyoyo.HelperClient
    :members:
    
 Defined Exceptions
 ------------------
 
-.. autoexception:: trioyoyo.oyoyo.cmdhandler.CommandError
+.. autoexception:: trioyoyo.CommandError
    :members:
 
-.. autoexception:: trioyoyo.oyoyo.cmdhandler.NoSuchCommandError
+.. autoexception:: trioyoyo.NoSuchCommandError
    :members:
 
-.. autoexception:: trioyoyo.oyoyo.cmdhandler.ProtectedCommandError
+.. autoexception:: trioyoyo.ProtectedCommandError
    :members:
 
-.. autoexception:: trioyoyo.oyoyo.cmdhandler.IRCClientError
+.. autoexception:: trioyoyo.IRCClientError
    :members:
+   
+Helper Functions   
+-----------------
+
+.. autofunction:: trioyoyo.parse_nick   
+.. autofunction:: trioyoyo.parse_raw_irc_command
    
 IRC Events
 ----------
+
+This is a list of all valid commands, accessible as :data:`all_events` (as well as :data:`generated_events`, :data:`protocol_events`, and :data:`numeric_events` respectively)
+
+	
+	
  ====== ================= ====== =================== 
   Num:       Command       Num:        Command       
  ====== ================= ====== =================== 

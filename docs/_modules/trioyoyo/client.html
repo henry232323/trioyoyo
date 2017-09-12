@@ -71,17 +71,23 @@
 <span class="sd">To start the connection run IRCClient.connect(); (coroutine)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">trio</span>
 
-<span class="kn">from</span> <span class="nn">.oyoyo.parse</span> <span class="k">import</span> <span class="n">parse_raw_irc_command</span>
-<span class="kn">from</span> <span class="nn">.oyoyo.cmdhandler</span> <span class="k">import</span> <span class="n">IRCClientError</span>
+<span class="kn">from</span> <span class="nn">._oyoyo.parse</span> <span class="k">import</span> <span class="n">parse_raw_irc_command</span>
+<span class="kn">from</span> <span class="nn">._oyoyo.cmdhandler</span> <span class="k">import</span> <span class="n">IRCClientError</span><span class="p">,</span> <span class="n">CommandHandler</span>
 
 
-<div class="viewcode-block" id="IRCClient"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient">[docs]</a><span class="k">class</span> <span class="nc">IRCClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bufsize</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+<div class="viewcode-block" id="IRCClient"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient">[docs]</a><span class="k">class</span> <span class="nc">IRCClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">socket</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bufsize</span> <span class="o">=</span> <span class="mi">1024</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bufsize</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A basic Async IRC client. Use coroutine IRCClient.connect to initiate</span>
 <span class="sd">        the connection. Takes the event loop, a host (address, port) and if</span>
@@ -89,10 +95,8 @@
 <span class="sd">        ClientProtocol class, which just uses the IRCClient&#39;s tracebacks and</span>
 <span class="sd">        passes received data to the client.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">address</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bufsize</span> <span class="o">=</span> <span class="n">bufsize</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;trioyoyo&quot;</span><span class="p">)</span>
@@ -101,37 +105,48 @@
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">(address=</span><span class="si">{1}</span><span class="s2">, port=</span><span class="si">{2}</span><span class="s2">, bufsize=</span><span class="si">{3}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
 
-<div class="viewcode-block" id="IRCClient.connect"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initiate the connection, creates a connection and assigns the created socket to `client.socket`&quot;&quot;&quot;</span>
-        <span class="n">buffer</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">trio</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">()</span> <span class="k">as</span> <span class="n">client_sock</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">client_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
-            <span class="k">async</span> <span class="k">with</span> <span class="n">trio</span><span class="o">.</span><span class="n">open_nursery</span><span class="p">()</span> <span class="k">as</span> <span class="n">nursery</span><span class="p">:</span>
-                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client_sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
-                        <span class="k">break</span>
-                    <span class="n">buffer</span> <span class="o">+=</span> <span class="n">data</span>
-                    <span class="n">pts</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="n">buffer</span> <span class="o">=</span> <span class="n">pts</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-                    <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">:</span>
-                        <span class="n">nursery</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_received</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
-                <span class="n">nursery</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_lost</span><span class="p">)</span></div>
+    <span class="c1">############# Callbacks #############</span>
 
-<div class="viewcode-block" id="IRCClient.connection_made"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.connection_made">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connection_made</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IRCClient.connection_made"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.connection_made">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connection_made</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Called on a successful connection, by default forwarded by</span>
 <span class="sd">        protocol.connection_made&quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;connecting to </span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;connecting to </span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="IRCClient.data_received"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.data_received">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">data_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="IRCClient.data_received"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.data_received">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">data_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Called when data is received by the connection, by default</span>
 <span class="sd">        forwarded by protocol.data_received, passes bytes not str&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;received: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="IRCClient.connection_lost"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.connection_lost">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connection_lost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Called when the connection is dropped.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="IRCClient.connection_lost"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.connection_lost">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connection_lost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the connection is dropped.&quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;connection dropped&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="IRCClient.send"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.send">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="c1">############# Methods #############</span>
+
+<div class="viewcode-block" id="IRCClient.connect"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initiate the connection, creates a connection and assigns the created socket to `client.socket`. Blocking&quot;&quot;&quot;</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">trio</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">()</span> <span class="k">as</span> <span class="n">client_sock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">client_sock</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">resolve_remote_address</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+            <span class="k">await</span> <span class="n">client_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">trio</span><span class="o">.</span><span class="n">open_nursery</span><span class="p">()</span> <span class="k">as</span> <span class="n">nursery</span><span class="p">:</span>
+                <span class="n">nursery</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_made</span><span class="p">)</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">_sock</span><span class="o">.</span><span class="n">_closed</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client_sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                            <span class="k">break</span>
+                        <span class="n">buffer</span> <span class="o">+=</span> <span class="n">data</span>
+                        <span class="n">pts</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">buffer</span> <span class="o">=</span> <span class="n">pts</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">:</span>
+                            <span class="n">nursery</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_received</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="n">nursery</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_lost</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IRCClient.send"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.send">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send a message to the connected server. all arguments are joined</span>
 <span class="sd">        with a space for convenience, for example the following are identical</span>
 
@@ -157,37 +172,37 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_raw</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;---&gt; send &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="IRCClient.send_msg"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.send_msg">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<div class="viewcode-block" id="IRCClient.send_msg"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.send_msg">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send a str to the server from absolute raw, none of the formatting</span>
 <span class="sd">        from IRCClient.send&quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="IRCClient.send_raw"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.send_raw">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="IRCClient.send_raw"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.send_raw">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send raw bytes to the server, none of the formatting from IRCClient.send&quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="IRCClient.close"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IRCClient.close"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Close the connection&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;close transport&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="IRCClient.run"><a class="viewcode-back" href="../../index.html#trioyoyo.client.IRCClient.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Starts the client, blocking. For a non-blocking coroutine use client.connect()&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IRCClient.run"><a class="viewcode-back" href="../../index.html#trioyoyo.IRCClient.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Starts the client, blocking. Use `client.connect` for a runnable coro. Essentially `trio.run(self.connect)`&quot;&quot;&quot;</span>
         <span class="n">trio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="CommandClient"><a class="viewcode-back" href="../../index.html#trioyoyo.client.CommandClient">[docs]</a><span class="k">class</span> <span class="nc">CommandClient</span><span class="p">(</span><span class="n">IRCClient</span><span class="p">):</span>
+<div class="viewcode-block" id="CommandClient"><a class="viewcode-back" href="../../index.html#trioyoyo.CommandClient">[docs]</a><span class="k">class</span> <span class="nc">CommandClient</span><span class="p">(</span><span class="n">IRCClient</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;IRCClient, using a command handler&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd_handler</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd_handler</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Takes a command handler (see oyoyo.cmdhandler.CommandHandler)</span>
 <span class="sd">        whose attributes are the commands you want callable, for example</span>
 <span class="sd">        with a privmsg cmdhandler.privmsg will be awaited with the</span>
 <span class="sd">        appropriate *args, decorate methods with @protected to make it</span>
 <span class="sd">        uncallable as a command&quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">command_handler</span> <span class="o">=</span> <span class="n">cmd_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">IRCClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command_handler</span><span class="p">:</span> <span class="n">CommandHandler</span> <span class="o">=</span> <span class="n">cmd_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CommandClient.data_received"><a class="viewcode-back" href="../../index.html#trioyoyo.client.CommandClient.data_received">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">data_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="CommandClient.data_received"><a class="viewcode-back" href="../../index.html#trioyoyo.CommandClient.data_received">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">data_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;On IRCClient.data_received parse for a command and pass to the</span>
 <span class="sd">        command_handler to run()&quot;&quot;&quot;</span>
         <span class="n">prefix</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">parse_raw_irc_command</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
