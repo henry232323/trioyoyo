@@ -27,7 +27,7 @@ To start the connection run IRCClient.connect(); (coroutine)
 """
 
 import logging
-from typing import Union, Callable
+from typing import Union, Callable, Type
 
 import trio
 

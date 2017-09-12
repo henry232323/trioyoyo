@@ -4,6 +4,10 @@ from trioyoyo import CommandHandler, protected, CommandClient
 class CommandExampleClient(CommandClient):
     nick = "trioyoyo-example"
 
+    async def data_received(self, data):  # Be sure if you use this to `super()`, otherwise commands wont work.
+        await super().data_received(data)
+        print(data)
+
 
 class ExampleCommandHandler(CommandHandler):
     first = False

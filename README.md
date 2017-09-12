@@ -38,4 +38,5 @@ class BasicExampleClient(IRCClient):
 client = BasicExampleClient(address="irc.freenode.net", port=6667)
 client.run()
 ```
-
+ Note! When using `trioyoyo.CommandClient` if you overwrite `data_received`, be sure to call its `super()`.
+ 
