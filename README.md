@@ -7,7 +7,7 @@
 A port of the Python IRC library oyoyo to trio for Python 3.5+
 A Python trio IRC library
 
-[See the documentation](http://typheus.me/trioyoyo)
+[See the documentation](https://github.com/henry232323/trioyoyo/tree/master/docs)
 
 Uses Trio instead of its original threading client. Creating an IRCClient instance will create the protocol instance.
 To start the connection run `IRCClient.connect()` (coroutine)

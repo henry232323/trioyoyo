@@ -23,7 +23,7 @@
 For more information and documentation about the original package:
    http://code.google.com/p/oyoyo/
 
-For documentation on trioyoyo: http://trioyoyo.typheus.me/
+For documentation on trioyoyo: https://github.com/henry232323/trioyoyo
 """
 from .helpers import HelperClient
 from .client import IRCClient, CommandClient
